@@ -1,0 +1,40 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Android project
+        run: |
+          unzip -o SoniEnglishTypingTutor-AndroidProject.zip -d android-project
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Download Gradle
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.10-bin.zip
+          unzip -q gradle-8.10-bin.zip
+          echo "$PWD/gradle-8.10/bin" >> $GITHUB_PATH
+
+      - name: Build APK
+        working-directory: android-project
+        run: gradle assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Soni-English-Typing-Tutor
+          path: android-project/app/build/outputs/apk/debug/app-debug.apk
